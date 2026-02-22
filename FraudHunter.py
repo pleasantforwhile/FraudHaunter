@@ -450,8 +450,6 @@ async def trainer_answer(callback: CallbackQuery):
     else:
         await trainer_finish(callback, scenario_id, new_score, len(scenario.steps))
 
-
-# Обработчик для кнопки "Завершить досрочно"
 @router.callback_query(F.data.startswith("trainer_finish_"))
 async def trainer_finish_handler(callback: CallbackQuery):
     scenario_id = int(callback.data.split("_")[-1])
@@ -467,13 +465,9 @@ async def trainer_finish_handler(callback: CallbackQuery):
     if not scenario:
         await callback.answer("Сценарий не найден")
         return
-
-    # Проверяем, что это тот же сценарий
     if current_scenario_id != scenario_id:
         await callback.answer("Ошибка: несовпадение сценариев")
         return
-
-    # Завершаем сценарий с текущим счетом
     await trainer_finish(callback, scenario_id, current_score, len(scenario.steps))
 
 
@@ -578,7 +572,7 @@ async def dict_word_detail(callback: CallbackQuery):
         "ВЫСОКИЙ": "🟠",
         "СРЕДНИЙ": "🟡",
         "НИЗКИЙ": "🟢"
-    }.get(threat.threat_level, "⚪")
+    }.get(threat, "⚪")
 
     await callback.message.edit_text(
         f"{threat_emoji} *{threat.word.upper()}*\n\n"
@@ -782,7 +776,7 @@ async def menu_generator(callback: CallbackQuery):
     builder.row(InlineKeyboardButton(text="↩️ Назад", callback_data="main_menu"))
 
     await callback.message.edit_text(
-        "🛠️ *Улучшенный генератор ответов*\n\n"
+        "🛠️ *Генератор ответов*\n\n"
         "Создайте персонализированную защитную фразу для разговора с мошенником.\n"
         "Система предложит выбрать:\n"
         "1. Стиль ответа\n"
@@ -975,7 +969,7 @@ async def generator_back(callback: CallbackQuery):
 @router.callback_query(F.data == "main_menu")
 async def return_to_menu(callback: CallbackQuery):
     await callback.message.edit_text(
-        "🛡️ *АнтиМанипулятор*\n\n"
+        "🛡️ *Fraud Hunter*\n\n"
         "Выберите модуль:",
         reply_markup=get_main_menu(),
         parse_mode="Markdown"
@@ -989,4 +983,5 @@ async def main():
 
 
 if __name__ == "__main__":
+
     asyncio.run(main())
