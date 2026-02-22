@@ -35,6 +35,7 @@ class TrainingScenario:
 @dataclass
 class ThreatDictionary:
     word: str
+    threat_level: str
     description: str
     action: str
 
@@ -984,4 +985,5 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
