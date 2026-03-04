@@ -21,8 +21,6 @@ dp = Dispatcher()
 router = Router()
 dp.include_router(router)
 
-
-# ========== МОДЕЛИ ДАННЫХ ==========
 @dataclass
 class TrainingScenario:
     id: int
@@ -214,9 +212,6 @@ TrainingScenario(
     )
 ]
 
-
-
-# Модуль 2: Словарь угроз
 THREAT_DICT = [
     ThreatDictionary("код из SMS", "КРИТИЧЕСКИЙ",
                      "Сотрудник банка или госслужбы НИКОГДА не запросит полный код из SMS. Это окончательное подтверждение операции. Любой запрос кода — 100% мошенничество.",
@@ -259,12 +254,9 @@ THREAT_DICT = [
                      "Не запоминайте и не используйте кодовые слова от неизвестных лиц. Настоящие процедуры не требуют секретных слов.")
 ]
 
-# Модуль 3: Генератор ответов - варианты
 TONE_OPTIONS = ["Жестко", "Вежливо"]
 VERIFY_OPTIONS = ["Да, потребовать документы", "Нет, просто отказать"]
 THREAT_OPTIONS = ["Да, упомянуть запись", "Нет"]
-
-# ========== КЛАВИАТУРЫ ==========
 def get_main_menu():
     """Главное меню бота"""
     builder = InlineKeyboardBuilder()
@@ -273,8 +265,6 @@ def get_main_menu():
     builder.row(InlineKeyboardButton(text="🛠️ Генератор ответов", callback_data="menu_generator"))
     return builder.as_markup()
 
-
-# ========== ОБРАБОТЧИКИ КОМАНД ==========
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     await message.answer(
@@ -297,9 +287,7 @@ async def cmd_help(message: Message):
         parse_mode="Markdown"
     )
 
-
-# ========== МОДУЛЬ 1: ТРЕНАЖЕР ==========
-user_sessions = {}  # user_id -> (scenario_id, step, score)
+user_sessions = {} 
 
 
 @router.callback_query(F.data == "menu_trainer")
@@ -322,7 +310,6 @@ async def show_training_page(callback: CallbackQuery, page: int):
             callback_data=f"trainer_start_{scenario.id}"
         ))
 
-    # Пагинация
     total_pages = (len(TRAINING_SCENARIOS) + items_per_page - 1) // items_per_page
     if total_pages > 1:
         pagination_buttons = []
@@ -415,13 +402,11 @@ async def trainer_answer(callback: CallbackQuery):
         return
 
     question, answers, correct_idx = scenario.steps[step]
-
-    # Обновляем счет
+    
     session = user_sessions.get(callback.from_user.id, (scenario_id, 0, 0))
     new_score = session[2] + (1 if answer_idx == correct_idx else 0)
     user_sessions[callback.from_user.id] = (scenario_id, step + 1, new_score)
 
-    # Обратная связь
     feedback = "✅ *Правильно!*" if answer_idx == correct_idx else "❌ *Неправильно!*"
     explanation = f"\n\n*Объяснение:* Вы выбрали '{answers[answer_idx]}'.\n"
 
@@ -430,7 +415,6 @@ async def trainer_answer(callback: CallbackQuery):
     else:
         explanation += f"Правильный ответ был: '{answers[correct_idx]}'.\nМошенник использовал: *{scenario.method}*"
 
-    # Следующий шаг или завершение
     if step + 1 < len(scenario.steps):
         builder = InlineKeyboardBuilder()
         builder.row(InlineKeyboardButton(
@@ -450,8 +434,6 @@ async def trainer_answer(callback: CallbackQuery):
     else:
         await trainer_finish(callback, scenario_id, new_score, len(scenario.steps))
 
-
-# Обработчик для кнопки "Завершить досрочно"
 @router.callback_query(F.data.startswith("trainer_finish_"))
 async def trainer_finish_handler(callback: CallbackQuery):
     scenario_id = int(callback.data.split("_")[-1])
@@ -468,12 +450,10 @@ async def trainer_finish_handler(callback: CallbackQuery):
         await callback.answer("Сценарий не найден")
         return
 
-    # Проверяем, что это тот же сценарий
     if current_scenario_id != scenario_id:
         await callback.answer("Ошибка: несовпадение сценариев")
         return
 
-    # Завершаем сценарий с текущим счетом
     await trainer_finish(callback, scenario_id, current_score, len(scenario.steps))
 
 
@@ -499,7 +479,6 @@ async def trainer_finish(callback: CallbackQuery, scenario_id: int, score: int =
 
     percentage = (score / total * 100) if total > 0 else 0
 
-    # Генерируем оценку
     if percentage >= 90:
         grade = "🎖️ Отлично! Вы эксперт по безопасности!"
     elif percentage >= 70:
@@ -529,7 +508,7 @@ async def trainer_finish(callback: CallbackQuery, scenario_id: int, score: int =
         parse_mode="Markdown"
     )
     user_sessions.pop(callback.from_user.id, None)
-# МОДУЛЬ 3
+    
 @router.callback_query(F.data == "menu_dict")
 async def menu_dict(callback: CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -572,7 +551,6 @@ async def dict_word_detail(callback: CallbackQuery):
         await callback.answer("Слово не найдено в словаре")
         return
 
-    # Формируем ответ с эмодзи для уровня угрозы
     threat_emoji = {
         "КРИТИЧЕСКИЙ": "🔴",
         "ВЫСОКИЙ": "🟠",
@@ -625,7 +603,6 @@ async def dictionary_lookup(message: Message):
             parse_mode="Markdown"
         )
     else:
-        # Предлагаем популярные запросы
         popular_words = ", ".join([t.word for t in THREAT_DICT[:3]])
         await message.answer(
             f"❓ *Слово не найдено*\n\n"
@@ -634,11 +611,8 @@ async def dictionary_lookup(message: Message):
             parse_mode="Markdown"
         )
 
+generator_state = {}
 
-# ========== МОДУЛЬ 4: ГЕНЕРАТОР ОТВЕТОВ ==========
-generator_state = {}  # user_id -> {"style": None, "goal": None, "audience": None}
-
-# Варианты выбора
 STYLE_OPTIONS = {
     "hard": "Жесткий и прямолинейный",
     "polite": "Вежливый, но бескомпромиссный",
@@ -660,9 +634,7 @@ AUDIENCE_OPTIONS = {
     "any": "Любая роль"
 }
 
-# База вариантов ответов
 RESPONSE_TEMPLATES = {
-    # Жесткий + Прекратить + Банк
     ("hard", "stop", "bank"): [
         {
             "text": "«Ваш номер зафиксирован как мошеннический. Не звоните больше.»",
@@ -678,7 +650,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Вежливый + Проверить + Госорган
     ("polite", "verify", "gov"): [
         {
             "text": "«Благодарю за информацию. Для её проверки прошу вас направить официальный запрос на мой адрес, указанный в вашей базе. Без документа я не могу комментировать ситуацию.»",
@@ -694,7 +665,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Провокационный + Угроза + IT
     ("provocative", "threaten", "it"): [
         {
             "text": "«Вы используете техники «создания ложной угрозы» и «псевдопротокола». Запись этого разговора, ваш номер и IP уже загружаются в базу scam-активности CERT FinTech.»",
@@ -710,7 +680,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Вежливый + Прекратить + Родственник
     ("polite", "stop", "relative"): [
         {
             "text": "«Мне очень жаль слышать о ваших проблемах. Для оказания экстренной помощи я сейчас прерву наш разговор и сам позвоню в службу 112, чтобы им передать все данные.»",
@@ -726,7 +695,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Жесткий + Угроза + Коллектор
     ("hard", "threaten", "collector"): [
         {
             "text": "«Ваши действия подпадают под ст. 159 УК РФ «Мошенничество» и ст. 163 «Вымогательство». Полная запись с вашими угрозами уже сформирована для заявления в СКР.»",
@@ -742,7 +710,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Провокационный + Проверить + Любая роль (универсальный)
     ("provocative", "verify", "any"): [
         {
             "text": "«Прежде чем продолжить, пройдем верификацию. Назовите 8-ю цифру вашего ИНН, 3-ю букву в кодовом слове из договора и текущий курс ЦБ к доллару. Жду.»",
@@ -758,7 +725,6 @@ RESPONSE_TEMPLATES = {
         }
     ],
 
-    # Дефолтные комбинации (если точная не найдена)
     ("hard", "stop", "any"): [
         {
             "text": "«Разговор окончен. Я не общаюсь с неизвестными лицами по телефону. Ваш номер занесен в черный список.»",
@@ -927,7 +893,6 @@ async def generator_step3(callback: CallbackQuery):
         f"*Скопируйте подходящий вариант:*\n\n"
     )
 
-    # Добавляем варианты ответов
     for i, response in enumerate(responses, 1):
         result_text += f"*Вариант {i}:*\n"
         result_text += f"`{response['text']}`\n\n"
@@ -980,13 +945,11 @@ async def return_to_menu(callback: CallbackQuery):
         reply_markup=get_main_menu(),
         parse_mode="Markdown"
     )
-
-
-# ========== ЗАПУСК БОТА ==========
 async def main():
     logging.info("Бот запускается...")
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
+
     asyncio.run(main())
