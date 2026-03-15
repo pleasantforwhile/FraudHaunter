@@ -15,10 +15,6 @@ from dotenv import load_dotenv
 
 time.sleep(3)
 
-print("=" * 60)
-print("🚀 FRAUD HUNTER BOT STARTING")
-print("=" * 60)
-
 load_dotenv()
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
@@ -31,21 +27,6 @@ if not API_TOKEN:
 
 if not API_TOKEN:
     API_TOKEN = os.environ.get('TOKEN') or os.getenv('TOKEN')
-
-print(f"Все переменные окружения: {list(os.environ.keys())}")
-print(f"BOT_TOKEN в os.environ: {'BOT_TOKEN' in os.environ}")
-print(f"BOT_TOKEN через getenv: {os.getenv('BOT_TOKEN') is not None}")
-
-if API_TOKEN:
-    print(f"✅ ТОКЕН НАЙДЕН! Длина: {len(API_TOKEN)}")
-    print(f"✅ Первые символы: {API_TOKEN[:5]}...")
-else:
-    print("❌ ТОКЕН НЕ НАЙДЕН!")
-    print("Пожалуйста, убедитесь что переменная BOT_TOKEN есть в Railway")
-    print("=" * 60)
-    sys.exit(1)
-
-print("=" * 60)
 
 logging.basicConfig(level=logging.INFO)
 
