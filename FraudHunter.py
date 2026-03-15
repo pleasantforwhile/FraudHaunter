@@ -1,6 +1,9 @@
 
 import asyncio
 import logging
+import os
+import sys
+import time
 from pathlib import Path
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
@@ -9,17 +12,50 @@ from aiogram import Bot, Dispatcher, Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-import os
 from dotenv import load_dotenv
 
+time.sleep(2)
+
 load_dotenv()
-API_TOKEN = os.environ.get('BOT_TOKEN') or os.getenv('BOT_TOKEN')
+API_TOKEN = None
+
+API_TOKEN = os.environ.get('BOT_TOKEN')
+
+if not API_TOKEN:
+    API_TOKEN = os.getenv('BOT_TOKEN')
+
+if not API_TOKEN:
+    API_TOKEN = os.environ.get('API_TOKEN') or os.getenv('API_TOKEN')
+print("=" * 60)
+print("🚀 FRAUD HUNTER BOT STARTING")
+print("=" * 60)
+print(f"Все переменные окружения: {list(os.environ.keys())}")
+print(f"BOT_TOKEN в os.environ: {'BOT_TOKEN' in os.environ}")
+print(f"BOT_TOKEN через getenv: {os.getenv('BOT_TOKEN') is not None}")
+
+if API_TOKEN:
+    print(f"✅ ТОКЕН НАЙДЕН! Длина: {len(API_TOKEN)}")
+    print(f"✅ Первые символы: {API_TOKEN[:5]}...")
+    print(f"✅ Последние символы: ...{API_TOKEN[-5:]}")
+else:
+    print("❌ ТОКЕН НЕ НАЙДЕН!")
+    print("Пожалуйста, добавьте переменную BOT_TOKEN в настройках Railway")
+    print("=" * 60)
+    sys.exit(1)
+
+print("=" * 60)
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher()
-router = Router()
-dp.include_router(router)
+
+try:
+    bot = Bot(token=API_TOKEN)
+    dp = Dispatcher()
+    router = Router()
+    dp.include_router(router)
+    print("✅ Бот и диспетчер созданы успешно")
+except Exception as e:
+    print(f"❌ Ошибка создания бота: {e}")
+    sys.exit(1)
 
 @dataclass
 class TrainingScenario:
