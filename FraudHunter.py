@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 import os
@@ -14,10 +13,13 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from dotenv import load_dotenv
 
-time.sleep(2)
+time.sleep(3)
+
+print("=" * 60)
+print("🚀 FRAUD HUNTER BOT STARTING")
+print("=" * 60)
 
 load_dotenv()
-API_TOKEN = None
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
@@ -26,9 +28,10 @@ if not API_TOKEN:
 
 if not API_TOKEN:
     API_TOKEN = os.environ.get('API_TOKEN') or os.getenv('API_TOKEN')
-print("=" * 60)
-print("🚀 FRAUD HUNTER BOT STARTING")
-print("=" * 60)
+
+if not API_TOKEN:
+    API_TOKEN = os.environ.get('TOKEN') or os.getenv('TOKEN')
+
 print(f"Все переменные окружения: {list(os.environ.keys())}")
 print(f"BOT_TOKEN в os.environ: {'BOT_TOKEN' in os.environ}")
 print(f"BOT_TOKEN через getenv: {os.getenv('BOT_TOKEN') is not None}")
@@ -36,10 +39,9 @@ print(f"BOT_TOKEN через getenv: {os.getenv('BOT_TOKEN') is not None}")
 if API_TOKEN:
     print(f"✅ ТОКЕН НАЙДЕН! Длина: {len(API_TOKEN)}")
     print(f"✅ Первые символы: {API_TOKEN[:5]}...")
-    print(f"✅ Последние символы: ...{API_TOKEN[-5:]}")
 else:
     print("❌ ТОКЕН НЕ НАЙДЕН!")
-    print("Пожалуйста, добавьте переменную BOT_TOKEN в настройках Railway")
+    print("Пожалуйста, убедитесь что переменная BOT_TOKEN есть в Railway")
     print("=" * 60)
     sys.exit(1)
 
