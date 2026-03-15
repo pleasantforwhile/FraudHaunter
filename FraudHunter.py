@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-API_TOKEN = os.getenv('BOT_TOKEN')
+API_TOKEN = os.environ.get('BOT_TOKEN') or os.getenv('BOT_TOKEN')
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
